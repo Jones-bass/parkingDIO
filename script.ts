@@ -4,16 +4,23 @@ interface Veiculo {
   entrada: Date;
 }
 
-(function() {
-  const $ = (query: string): HTMLInputElement | null => 
-  document.querySelector(query);
+(function () {
+  const $ = (query: string): HTMLInputElement | null =>
+    document.querySelector(query);
 
   function patio() {
-    function ler() {}
 
-    function adicionar(veiculo: Veiculo) {
+        //funcao ler e salvar - resposavel por salvar no localstorage
+    function ler(): Veiculo[] {
+      return localStorage.patio ? JSON.parse(localStorage.patio) : [];
+    }
+
+    function salvar(veiculos: Veiculo[]) {
+      localStorage.setItem("patio", JSON.stringify(veiculos));
+    }
+
+    function adicionar(veiculo: Veiculo, salva?: boolean) {
       const row = document.createElement("tr");
-
       row.innerHTML = `
       <td>${veiculo.nome}</td>
       <td>${veiculo.placa}</td>
@@ -24,25 +31,32 @@ interface Veiculo {
       `;
 
       $("#patio")?.appendChild(row);
+      if (salva) salvar([...ler(), veiculo]);
     }
 
-    function remover() {}
+    function remover() { }
 
-    function salvar() {}
+    function render() {
+      $("#patio")!.innerHTML = "";
+      const patio = ler();
 
-    function render() {}
+      if (patio.length) {
+        patio.forEach((veiculo) => adicionar(veiculo));
+      }
+    }
 
-    return {ler, adicionar, remover, salvar, render };
+    return { ler, adicionar, remover, salvar, render };
   }
 
+  patio().render();
   $("#cadastrar")?.addEventListener("click", () => {
     const nome = $("#nome")?.value;
     const placa = $("#placa")?.value;
 
-    if(!nome || !placa) {
+    if (!nome || !placa) {
       alert("Os campos nome e placa são obrigatórios");
       return;
     }
-    patio().adicionar({nome, placa, entrada: new Date()})
+    patio().adicionar({ nome, placa, entrada: new Date() }, true)
   })
 })();
